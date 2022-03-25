@@ -1,0 +1,7 @@
+{
+  "name": "NFC Reader",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

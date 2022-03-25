@@ -1,0 +1,16 @@
+#progress-bar{
+  margin-top: 30px;
+  //visibility: hidden;
+}
+
+ion-progress-bar::part(progress) {
+  background-color: #c2ac70;
+}
+
+:host {
+  ion-item {
+    --border-color: #c2ac70; // default underline color
+    --highlight-color-invalid: red; // invalid underline color
+    --highlight-color-valid: #c2ac70; // valid underline color
+  }
+}

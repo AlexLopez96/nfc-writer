@@ -1,0 +1,15 @@
+<ion-menu side="start" menuId="first" contentId="mainContent">
+  <ion-header>
+    <ion-toolbar color="gold">
+      <ion-title>Menu</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content>
+    <ion-list>
+      <ion-item (click)="setReadMode()" >Read</ion-item>
+      <hr class="separator">
+      <ion-item (click)="setWriteMode()">Write + Read</ion-item>
+      <hr class="separator">
+    </ion-list>
+  </ion-content>
+</ion-menu>

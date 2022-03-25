@@ -1,0 +1,37 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      Tab 1
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Tab 1</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <ion-grid>
+    <ion-row>
+      <ion-col size="10">
+        <ion-item>
+          <ion-label position="floating">Code</ion-label>
+          <ion-input type="text" [(ngModel)]="qrCode"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col  size="2">
+        <ion-button id="btn-qr" (click)="readQr()" size="large">
+          <i class="fa-solid fa-qrcode"></i>
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <div id="btn-round" (click)="readNFC()">SCAN NFC</div>
+  <ion-progress-bar type="indeterminate" color="warning" id="progress-bar" *ngIf="readingNfc">
+    Scanning
+  </ion-progress-bar>
+  <div id="div-nfc" class="ion-text-center" ng-bind-html="divText">{{nftId}}</div>
+  <ion-button expand="block" size="large" (click)="sendToServer()">SEND</ion-button>
+</ion-content>

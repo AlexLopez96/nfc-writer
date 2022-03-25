@@ -1,0 +1,22 @@
+<ion-footer>
+  <ion-toolbar *ngIf="dataService.tokenId">
+    <p id="p-count">{{dataService.nfcArray$.getValue().length}} of {{dataService.difference}}</p>
+  </ion-toolbar>
+
+  <ion-toolbar>
+    <ion-grid>
+      <ion-row>
+        <ion-col size="6" >
+          <ion-button (click)="dataService.sendToServer()" expand="block" color="gold" id="btn-qr"  size="large">
+            SEND
+          </ion-button>
+        </ion-col>
+        <ion-col size="6" >
+          <ion-button (click)="clearNfcArray()" expand="block" color="gold" size="large">
+            CLEAR
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-toolbar>
+</ion-footer>
