@@ -14,7 +14,7 @@ export class DataService {
   tokenId: number;
   from: number;
   to: number;
-  externalUrl: string;
+  externalUrl: string = '';
   difference: number;
   nfcArray$ = new BehaviorSubject([]);
   readingNfc = false;
@@ -41,16 +41,16 @@ export class DataService {
     await this.presentLoading()
     this.barcodeScanner.scan().then(barcodeData => {
       this.clearNfcList();
-      // console.log('Barcode data', barcodeData);
       const qrArray = barcodeData.text.split('|');
+
       if (qrArray.length === 4){
         this.qrCode = barcodeData.text;
         this.from = parseInt(qrArray[1], 10);
         this.tokenId = this.from;
         this.to = parseInt(qrArray[2], 10);
         this.externalUrl = qrArray[3]
-        console.log(this.externalUrl)
         this.difference = (this.to -  this.from)+1;
+        this.isDataInserted = this.isReadableOrWritable()
 
         this.dismissLoading();
       }else {
@@ -109,7 +109,6 @@ export class DataService {
     }), (err)=>{
       console.log(err)
     }
-    console.log("HOLA")
   }
 
   async presentLoading() {
@@ -199,6 +198,7 @@ export class DataService {
     this.difference = 0;
     this.to = 0;
     this.tokenId = null;
+    this.externalUrl = '';
     this.clearNfcList();
   }
 

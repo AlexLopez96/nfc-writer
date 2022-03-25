@@ -19,7 +19,6 @@ export class HeaderComponent implements OnInit {
   constructor(
     public dataService: DataService,
     private barcodeScanner: BarcodeScanner,
-
     private menu: MenuController,
     private loadingPage: LoadingPage,
     public modalPage: ModalPage
@@ -30,8 +29,6 @@ ngOnInit() {}
   async toggleMenu(){
     await this.menu.toggle();
   }
-
-
 
 }
 

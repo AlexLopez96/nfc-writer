@@ -8,7 +8,7 @@ import {DataService} from "../../services/data.service";
 })
 export class FooterComponent implements OnInit {
   constructor(
-    private dataService: DataService,
+    public dataService: DataService,
     private appRef: ApplicationRef
   ) { }
 

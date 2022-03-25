@@ -1,5 +1,5 @@
 <ion-footer>
-  <ion-toolbar *ngIf="dataService.tokenId">
+  <ion-toolbar *ngIf="dataService.isDataInserted">
     <p id="p-count">{{dataService.nfcArray$.getValue().length}} of {{dataService.difference}}</p>
   </ion-toolbar>
 
