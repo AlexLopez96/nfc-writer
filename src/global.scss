@@ -32,8 +32,8 @@ $round-border: 50% !important;
   display: flex;
   border-radius: $round-border;
   background-color: #c2ac70;
-  width: 80vw;
-  height: 80vw;
+  width: 20vw;
+  height: 20vw;
   margin: 30px auto 0px;
   align-items: center;
   justify-content: center;
@@ -45,12 +45,25 @@ $round-border: 50% !important;
 #btn-round:hover{
   cursor: pointer;
 }
-#btn-qr, ion-button, ion-toolbar, hr{
+
+#btn-qr, ion-button, hr{
   margin-top: 0px;
+  background-color: #c2ac70 !important;
+  color: white;
+  border-radius: 8px;
+}
+
+ion-toolbar{
   background-color: #c2ac70 !important;
   color: white;
 }
 
+#btn-exit{
+  margin-top: 0px;
+  background-color: red !important;
+  color: white;
+  border-radius: 8px;
+}
 
 #div-nfc{
   padding:10px;

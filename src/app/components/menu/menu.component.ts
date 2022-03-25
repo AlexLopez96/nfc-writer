@@ -16,11 +16,13 @@ export class MenuComponent implements OnInit {
 
   async setReadMode(){
     this.dataService.mode = 'read';
+    this.dataService.clearNfcList()
     await menuController.close()
   }
 
   async setWriteMode(){
     this.dataService.mode = 'write';
+    this.dataService.clearNfcList()
     await menuController.close()
   }
 

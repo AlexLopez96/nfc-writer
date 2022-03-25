@@ -1,7 +1,9 @@
-import {Injectable} from '@angular/core';
+import {ApplicationRef, Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders} from "@angular/common/http";
-import {AlertController} from "@ionic/angular";
+import {AlertController, LoadingController, ModalController} from "@ionic/angular";
 import {BehaviorSubject} from "rxjs";
+import {BarcodeScanner} from "@awesome-cordova-plugins/barcode-scanner/ngx";
+import {Ndef, NFC} from "@awesome-cordova-plugins/nfc/ngx";
 
 @Injectable({
   providedIn: 'root'
@@ -10,17 +12,119 @@ export class DataService {
   nfcId: string;
   qrCode: string;
   tokenId: number;
+  from: number;
   to: number;
+  externalUrl: string;
   difference: number;
   nfcArray$ = new BehaviorSubject([]);
   readingNfc = false;
   mode: 'read' | 'write' = "read";
+  public loading: any;
+  public isDataInserted = false;
+
+  modal: any;
 
   constructor(
     public alertController: AlertController,
     private http: HttpClient,
+    private loadingController: LoadingController,
+    public modalController: ModalController,
+    private barcodeScanner: BarcodeScanner,
+    public nfc: NFC,
+    public ndef: Ndef,
+    private appRef: ApplicationRef,
+
   ) {
   }
+
+  async readQr() {
+    await this.presentLoading()
+    this.barcodeScanner.scan().then(barcodeData => {
+      this.clearNfcList();
+      // console.log('Barcode data', barcodeData);
+      const qrArray = barcodeData.text.split('|');
+      if (qrArray.length === 4){
+        this.qrCode = barcodeData.text;
+        this.from = parseInt(qrArray[1], 10);
+        this.tokenId = this.from;
+        this.to = parseInt(qrArray[2], 10);
+        this.externalUrl = qrArray[3]
+        console.log(this.externalUrl)
+        this.difference = (this.to -  this.from)+1;
+
+        this.dismissLoading();
+      }else {
+        alert('Unsupported QR code');
+        this.dismissLoading();
+      }
+
+    }).catch(err => {
+      this.dismissLoading()
+      console.log('Error', err);
+    });
+  }
+
+  readNFC() {
+    this.nfcId = '';
+    this.readingNfc = true;
+    const flags = this.nfc.FLAG_READER_NFC_A | this.nfc.FLAG_READER_NFC_V;
+
+    this.nfc.readerMode(flags).subscribe(
+      async (tag) => {
+        if (this.readingNfc) {
+          this.nfcId = this.nfc.bytesToHexString(tag.id).match(/.{2}/g).join(':').toUpperCase();
+          this.nfcArray$.next([...this.nfcArray$.getValue(), this.nfcId.toUpperCase()])
+          this.readingNfc = false;
+
+          this.appRef.tick()
+        }
+      },
+      err => console.log('Error reading tag', err)
+    );
+  }
+
+  writeNfc(){
+    this.readingNfc = true;
+    this.nfc.addNdefListener().subscribe(async (evt) => {
+      console.log("ENTERED")
+      console.log(evt, 'evt')
+      let message = [
+        // this.ndef.textRecord("hola"),
+        this.ndef.uriRecord("http://github.com/chariotsolutions/phonegap-nfc" + new Date().getTime())
+
+      ];
+
+      // debugger;
+      await this.nfc.write(message)
+        .then((res)=>{
+          console.log(res, "BBBBBB")
+          this.readingNfc = false;
+          // console.log(this.nfc, "aaaa")
+        }).catch((e) =>{
+          console.log(e)
+        });
+
+      console.log(message, "message")
+      return
+    }), (err)=>{
+      console.log(err)
+    }
+    console.log("HOLA")
+  }
+
+  async presentLoading() {
+    this.loading = await this.loadingController.create({
+      cssClass: 'my-custom-class',
+      message: 'Please wait...',
+    });
+    await this.loading.present();
+
+  }
+
+  async dismissLoading(){
+    this.loading.dismiss()
+  }
+
 
   sendToServer() {
     if (this.verifyInput()) {
@@ -104,6 +208,16 @@ export class DataService {
     this.readingNfc = false;
   }
 
+  isReadableOrWritable(){
+    if(this.mode === 'read'){
+      if(this.from>0 && this.to>this.from ) return true
+    }
+    if(this.mode === 'write'){
+      if(this.from>0 && this.to>this.from && !this.isEmpty(this.externalUrl)) return true
+    }
+
+    return false
+  }
 
   isEmpty(x) {
     if (x == undefined) {

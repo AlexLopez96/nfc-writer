@@ -30,6 +30,5 @@ export class AppComponent {
 
     this.nfcArray.splice(index, 1)
     this.dataService.nfcArray$.next(this.nfcArray);
-    // this.appRef.tick()
   }
 }

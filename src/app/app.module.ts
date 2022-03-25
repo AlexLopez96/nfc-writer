@@ -11,18 +11,22 @@ import {Ndef, NFC} from '@awesome-cordova-plugins/nfc/ngx';
 import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 import { HttpClientModule } from '@angular/common/http';
 import {FormsModule} from "@angular/forms";
+
 import {HeaderComponent} from "./layouts/header/header.component";
 import {FooterComponent} from "./layouts/footer/footer.component";
+import {LoadingPage} from "./pages/loading/loading.page";
+import {ModalPage} from "./pages/modal/modal.page";
 
 @NgModule({
-  declarations: [AppComponent, HeaderComponent, FooterComponent],
-  entryComponents: [],
-  imports: [HttpClientModule, BrowserModule, IonicModule.forRoot(), AppRoutingModule, FormsModule],
-  providers: [
-    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    BarcodeScanner,
-    NFC,
-    Ndef],
-  bootstrap: [AppComponent],
+    declarations: [AppComponent, HeaderComponent, FooterComponent],
+    entryComponents: [],
+    imports: [HttpClientModule, BrowserModule, IonicModule.forRoot(), AppRoutingModule, FormsModule],
+    providers: [
+        {provide: RouteReuseStrategy, useClass: IonicRouteStrategy},
+        BarcodeScanner, NFC, Ndef, LoadingPage, ModalPage],
+    bootstrap: [AppComponent],
+    exports: [
+        HeaderComponent
+    ]
 })
 export class AppModule {}

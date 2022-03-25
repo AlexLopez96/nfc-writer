@@ -1,5 +1,5 @@
 <ion-header [translucent]="true">
-  <ion-toolbar >
+  <ion-toolbar>
     <ion-row class="ion-margin-top ion-margin-bottom">
       <ion-col size="3" class="ion-align-self-start ion-margin-start">
         <ion-buttons class="ion-margin-end">
@@ -9,7 +9,7 @@
         </ion-buttons>
       </ion-col>
       <ion-col class="ion-align-self-center">
-        <div><img  src="assets/img/zertinft_logo-no-icon.png"></div>
+        <div><img src="assets/img/zertinft_logo-no-icon.png"></div>
       </ion-col>
     </ion-row>
   </ion-toolbar>
@@ -18,16 +18,23 @@
     <ion-grid>
       <ion-row>
         <ion-col size="6">
-          <ion-button expand="block" color="gold" id="btn-qr" (click)="readQr()" size="large">
+          <ion-button *ngIf="dataService.mode == 'read'" expand="block" color="gold" (click)="dataService.readQr()"
+                      size="large">
             READ QR
+          </ion-button>
+          <ion-button *ngIf="dataService.mode == 'write'" expand="block" color="gold" (click)="modalPage.presentModal()"
+                      size="large">
+            CONFIG.
           </ion-button>
         </ion-col>
         <ion-col size="6">
-          <ion-button *ngIf="dataService.mode == 'read'" expand="block" color="gold" [disabled]="(!dataService.qrCode ||
-          dataService.difference <= dataService.nfcArray$.value.length) && dataService.mode == 'read'" (click)="readNFC()" size="large">
+          <ion-button *ngIf="dataService.mode == 'read'" expand="block" color="gold"
+                      [disabled]="(!dataService.qrCode ||dataService.difference <= dataService.nfcArray$.value.length)
+                      " (click)="dataService.readNFC()" size="large">
             READ NFC
           </ion-button>
-          <ion-button *ngIf="dataService.mode == 'write'" expand="block" color="gold" (click)="writeNfc()" size="large">
+          <ion-button *ngIf="dataService.mode == 'write'"  [disabled]="!dataService.isDataInserted" expand="block" color="gold"
+                      (click)="dataService.writeNfc()" size="large">
             WRITE NFC
           </ion-button>
         </ion-col>
