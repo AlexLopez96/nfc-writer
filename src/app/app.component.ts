@@ -26,9 +26,17 @@ export class AppComponent {
 
   }
 
-  deleteNfc(index){
+  async deleteNfc(index){
+    if (!this.dataService.externalUrl.includes("{tokenId}") || this.dataService.mode === 'read') {
+      this.nfcArray.splice(index, 1)
+      for (let i = index; i < this.dataService.nfcArray$.getValue().length; i++) {
+        console.log(this.dataService.nfcArray$.getValue()[i])
+        this.dataService.nfcArray$.getValue()[i].tokenId--
+      }
+    }else{
+      await this.dataService.deleteAlert();
+    }
 
-    this.nfcArray.splice(index, 1)
     this.dataService.nfcArray$.next(this.nfcArray);
   }
 }

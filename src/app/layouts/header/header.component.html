@@ -29,11 +29,12 @@
         </ion-col>
         <ion-col size="6">
           <ion-button *ngIf="dataService.mode == 'read'" expand="block" color="gold"
-                      [disabled]="(!dataService.qrCode ||dataService.difference <= dataService.nfcArray$.value.length)
-                      " (click)="dataService.readNFC()" size="large">
+                      [disabled]="(!dataService.qrCode  || (dataService.to + 1 - dataService.from) <= dataService.nfcArray$.value.length)"
+                      (click)="dataService.readNFC()" size="large">
             READ NFC
           </ion-button>
-          <ion-button *ngIf="dataService.mode == 'write'"  [disabled]="!dataService.isDataInserted" expand="block" color="gold"
+          <ion-button *ngIf="dataService.mode == 'write'"  [disabled]="(!dataService.isDataInserted ||
+                      (dataService.to + 1 - dataService.from) <= dataService.nfcArray$.value.length)" expand="block" color="gold"
                       (click)="dataService.writeNfc()" size="large">
             WRITE NFC
           </ion-button>

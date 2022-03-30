@@ -1,13 +1,15 @@
 <ion-footer>
-  <ion-toolbar *ngIf="dataService.isDataInserted">
-    <p id="p-count">{{dataService.nfcArray$.getValue().length}} of {{dataService.difference}}</p>
+<!--  <ion-toolbar *ngIf="dataService.isDataInserted">-->
+  <ion-toolbar *ngIf="dataService.from && dataService.to">
+    <p id="p-count">{{dataService.nfcArray$.getValue().length}} of {{dataService.to + 1 - dataService.from}}</p>
   </ion-toolbar>
 
   <ion-toolbar>
     <ion-grid>
       <ion-row>
         <ion-col size="6" >
-          <ion-button (click)="dataService.sendToServer()" expand="block" color="gold" size="large">
+          <ion-button (click)="dataService.sendToServer()" [disabled]="(this.dataService.from == null ||
+          !dataService.verifyInput())" expand="block" color="gold" size="large">
             SEND
           </ion-button>
         </ion-col>

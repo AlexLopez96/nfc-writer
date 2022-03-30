@@ -42,23 +42,24 @@ $round-border: 50% !important;
   color: white;
   box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
 }
-#btn-round:hover{
+
+#btn-round:hover {
   cursor: pointer;
 }
 
-#btn-qr, ion-button, hr{
+#btn-qr, ion-button, hr {
   margin-top: 0px;
   background-color: #c2ac70 !important;
   color: white;
-  border-radius: 8px;
+  border-radius: 5px;
 }
 
-ion-toolbar{
+ion-toolbar {
   background-color: #c2ac70 !important;
   color: white;
 }
 
-#btn-exit{
+#btn-exit {
   margin-top: 0px;
   background-color: red !important;
   color: white;
@@ -66,7 +67,7 @@ ion-toolbar{
 }
 
 
-#progress-bar{
+#progress-bar {
   margin-top: 30px;
   //visibility: hidden;
 }
@@ -75,10 +76,59 @@ ion-progress-bar::part(progress) {
   background-color: #c2ac70;
 }
 
-:host {
-  ion-item {
-    --border-color: #c2ac70; // default underline color
-    --highlight-color-invalid: red; // invalid underline color
-    --highlight-color-valid: #c2ac70; // valid underline color
-  }
+//:host {
+//  ion-item {
+//    --border-color: #c2ac70 !important; // default underline color
+//    --highlight-color-invalid: red; // invalid underline color
+//    --highlight-color-valid: #c2ac70 !important; // valid underline color
+//    --min-height: 1px;
+//  }
+//
+//  ion-item.invalid{
+//    --border-color: red !important; // default underline color
+//    color: red;
+//  }
+//}
+
+
+
+.item-has-focus {
+  --highlight-background: #c2ac70 !important;
+
 }
+
+.invalid.item-has-focus{
+  --highlight-background: red !important; // default underline color
+  color: red;
+}
+
+.btn-close {
+  --border-radius: 5px;
+}
+
+//ion-item::part(native){
+//  background-color: #FFFF33 !important;
+//  opacity: 1;
+//  //background: red;
+//}
+
+ion-item.highlight::part(native) {
+  background-color: #444223 !important;
+  opacity: 1;
+}
+
+ion-item.invalid::part(native){
+  --border-color: red !important; // default underline color
+  color: red;
+}
+
+.elipsis {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+hr{
+  margin-block-end: 0px;
+}
+

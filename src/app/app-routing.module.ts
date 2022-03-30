@@ -3,12 +3,14 @@ import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { AppComponent } from "./app.component";
 import {MenuComponent} from "./components/menu/menu.component";
 import {IonicModule} from "@ionic/angular";
+import {CommonModule} from "@angular/common";
 
 const routes: Routes = [
   {
     path: '',
     component: AppComponent
-  },  {
+  },
+  {
     path: 'modal',
     loadChildren: () => import('./pages/modal/modal.module').then( m => m.ModalPageModule)
   },
@@ -21,7 +23,8 @@ const routes: Routes = [
 @NgModule({
   imports: [
     RouterModule.forRoot(routes, {preloadingStrategy: PreloadAllModules}),
-    IonicModule
+    IonicModule,
+    CommonModule
   ],
     declarations: [
         MenuComponent

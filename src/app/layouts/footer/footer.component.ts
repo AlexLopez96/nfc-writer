@@ -9,17 +9,12 @@ import {DataService} from "../../services/data.service";
 export class FooterComponent implements OnInit {
   constructor(
     public dataService: DataService,
-    private appRef: ApplicationRef
   ) { }
 
   ngOnInit() {}
 
   clearNfcArray(){
-    // this.dataService.nfcArray = [];
-    // this.dataService.nfcArray$.next([]);
     this.dataService.clearNfcList();
-
-    // this.appRef.tick();
   }
 
 }
