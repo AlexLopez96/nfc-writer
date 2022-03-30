@@ -10,16 +10,16 @@ import {UtilsService} from "./utils/utils.service";
   providedIn: 'root'
 })
 export class DataService {
-  nfcId: string;
-  qrCode: string = null;
-  tokenId: number;
-  from: number;
-  to: number;
-  externalUrl: string = '';
-  difference: number;
-  nfcArray$ = new BehaviorSubject([]);
-  readingNfc = false;
-  mode: 'read' | 'write' = "read";
+  public nfcId: string;
+  public qrCode: string = null;
+  public tokenId: number;
+  public from: number;
+  public to: number;
+  public externalUrl: string = '';
+  public difference: number;
+  public nfcArray$ = new BehaviorSubject([]);
+  public readingNfc = false;
+  public mode: 'read' | 'write' = "read";
   public loading: any;
   public isDataInserted = false;
   private readSub;
@@ -46,12 +46,12 @@ export class DataService {
       this.clearNfcList();
       const qrArray = barcodeData.text.split('|');
 
-      if (qrArray.length === 4) {
+      if (qrArray.length >= 3 && qrArray.length <= 4) {
         this.qrCode = barcodeData.text;
         this.from = parseInt(qrArray[1], 10);
         this.tokenId = this.from;
         this.to = parseInt(qrArray[2], 10);
-        this.externalUrl = qrArray[3]
+        this.externalUrl = qrArray.length === 4 ? qrArray[3] : '';
         this.difference = (this.to - this.from) + 1;
         this.isDataInserted = this.isReadableOrWritable()
 
@@ -158,7 +158,15 @@ export class DataService {
 
 
   async setReadData(event) {
-    let external_url = this.getNdefMessageFromCharCode(event.tag.ndefMessage[0].payload);
+    let external_url;
+    console.log("AAAAA")
+    console.log(event)
+    if (!this.utils.isEmpty(event.tag.ndefMessage)) {
+      external_url = this.getNdefMessageFromCharCode(event.tag.ndefMessage[0].payload);
+    }else{
+      external_url = ''
+    }
+    console.log("BBBB")
 
     //In case we are writing we take the event before write so the data displayed is previous writing. So we take the
     //current URL and replace it with the dinamic values
@@ -336,7 +344,8 @@ export class DataService {
       if (this.from > 0 && this.to > this.from) return true
     }
     if (this.mode === 'write') {
-      if (this.from >= 0 && this.to >= this.from && !this.utils.isEmpty(this.externalUrl)) return true
+      if (!this.utils.isEmpty(this.from) && this.from >= 0 && !this.utils.isEmpty(this.to) && this.to >= this.from
+        && !this.utils.isEmpty(this.externalUrl)) return true
     }
 
     return false
