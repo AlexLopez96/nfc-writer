@@ -159,17 +159,14 @@ export class DataService {
 
   async setReadData(event) {
     let external_url;
-    console.log("AAAAA")
-    console.log(event)
     if (!this.utils.isEmpty(event.tag.ndefMessage)) {
       external_url = this.getNdefMessageFromCharCode(event.tag.ndefMessage[0].payload);
     }else{
       external_url = ''
     }
-    console.log("BBBB")
 
     //In case we are writing we take the event before write so the data displayed is previous writing. So we take the
-    //current URL and replace it with the dinamic values
+    //current URL and replace it with the dynamic values
     if (this.mode === "write"){
       external_url = this.externalUrl.replace(/\{tokenId}/g, this.tokenId.toString());
     }
