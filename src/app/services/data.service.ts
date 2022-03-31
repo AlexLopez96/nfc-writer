@@ -16,10 +16,15 @@ export class DataService {
   public from: number;
   public to: number;
   public externalUrl: string = '';
+
+  public tempFrom: number;
+  public tempTo: number;
+  public tempExternalUrl: string = '';
+
   public difference: number;
   public nfcArray$ = new BehaviorSubject([]);
   public readingNfc = false;
-  public mode: 'read' | 'write' = "read";
+  public mode: 'read' | 'write' | 'writing' = "read";
   public loading: any;
   public isDataInserted = false;
   private readSub;
@@ -48,13 +53,21 @@ export class DataService {
 
       if (qrArray.length >= 3 && qrArray.length <= 4) {
         this.qrCode = barcodeData.text;
-        this.from = parseInt(qrArray[1], 10);
-        this.tokenId = this.from;
-        this.to = parseInt(qrArray[2], 10);
-        this.externalUrl = qrArray.length === 4 ? qrArray[3] : '';
-        this.difference = (this.to - this.from) + 1;
-        this.isDataInserted = this.isReadableOrWritable()
+        if (this.mode == 'write'){
+          this.tempFrom = parseInt(qrArray[1], 10);
+          this.tokenId = this.tempFrom;
+          this.tempTo = parseInt(qrArray[2], 10);
+          this.tempExternalUrl = qrArray.length === 4 ? qrArray[3] : '';
+        }else{
+          this.from = parseInt(qrArray[1], 10);
+          this.tokenId = this.from;
+          this.to = parseInt(qrArray[2], 10);
+          this.externalUrl = qrArray.length === 4 ? qrArray[3] : '';
+          this.difference = (this.to - this.from) + 1;
+          this.isDataInserted = this.isReadableOrWritable()
+        }
 
+        this.unsubFromAllSubs()
         this.dismissLoading();
       } else {
         alert('Unsupported QR code');
@@ -82,6 +95,7 @@ export class DataService {
           }
 
           this.setReadData(event)
+
         }
       },
       err => console.log('Error reading tag', err)
@@ -89,8 +103,19 @@ export class DataService {
   }
 
   writeNfc() {
+    if (this.mode === 'write'){
+      this.mode = 'writing';
+      this.startWriting();
+    }else{
+      this.mode = 'write';
+      this.stopWriting();
+    }
+  }
+
+  startWriting(){
     this.readingNfc = true;
     this.unsubFromAllSubs()
+    this.appRef.tick()
     this.writeSub = this.nfc.addNdefListener()
       .subscribe(async (event) => {
         // this.tokenId++;
@@ -103,26 +128,39 @@ export class DataService {
           this.ndef.uriRecord(external_url)
 
         ];
+        console.log("hola")
 
         // debugger;
         if (!this.isExistingNfc(this.utils.decimalArrayToHex(event.tag.id)) && this.readingNfc){
           await this.nfc.write(message)
-            .then((res) => {
-              this.setReadData(event)
-              this.writtenAlert()
+            .then(async () => {
+              await this.setReadData(event)
+              // this.writtenAlert()
             }).catch((e) => {
               this.keepNfcNearAlert()
               console.log(e)
             });
 
-          return
+          // return
         }else{
-          await this.repeatedAlert()
+          // await this.repeatedAlert()
         }
+        if((this.to  - this.from)+1 == this.nfcArray$.value.length){
+          this.readingNfc = false;
+          this.mode = 'write'
+          this.unsubFromAllSubs()
 
+        }
+        this.appRef.tick()
       }), (err) => {
       console.log(err)
     }
+  }
+
+  stopWriting(){
+    this.readingNfc = false;
+    this.unsubFromAllSubs();
+    this.appRef.tick()
   }
 
   async sendToServer() {
@@ -159,7 +197,7 @@ export class DataService {
 
   async setReadData(event) {
     let external_url;
-    if (!this.utils.isEmpty(event.tag.ndefMessage)) {
+    if (!this.utils.isEmpty(event.tag.ndefMessage)) { //check if we have an URL
       external_url = this.getNdefMessageFromCharCode(event.tag.ndefMessage[0].payload);
     }else{
       external_url = ''
@@ -167,7 +205,7 @@ export class DataService {
 
     //In case we are writing we take the event before write so the data displayed is previous writing. So we take the
     //current URL and replace it with the dynamic values
-    if (this.mode === "write"){
+    if (this.mode === "writing"){
       external_url = this.externalUrl.replace(/\{tokenId}/g, this.tokenId.toString());
     }
 
@@ -300,13 +338,42 @@ export class DataService {
       , 4000);
   }
 
+  async clearAlert() {
+    const alert = await this.alertController.create({
+      cssClass: 'my-custom-class',
+      header: 'WARNING',
+      message: 'Are you sure you want to clear the list?',
+      buttons: [
+        {
+          text: 'CANCEL',
+          role: 'cancel',
+          cssClass: 'danger',
+          id: 'cancel-button',
+          handler: (blah) => {
+            console.log('Confirm Cancel: blah');
+          }
+        }, {
+          text: 'YES',
+          id: 'confirm-button',
+          handler: () => {
+            this.clearNfcList();
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
   resetVariables() {
     this.qrCode = '';
     this.difference = 0;
     this.from = null;
     this.to = null;
-    this.tokenId = null;
     this.externalUrl = '';
+    this.tempFrom = null;
+    this.tempTo = null;
+    this.tempExternalUrl = '';
+    this.tokenId = null;
     this.isDataInserted = false;
     this.clearNfcList();
   }
@@ -315,6 +382,9 @@ export class DataService {
     this.from = null;
     this.to = null;
     this.externalUrl = '';
+    this.tempFrom = null;
+    this.tempTo = null;
+    this.tempExternalUrl = '';
   }
 
   clearNfcList() {
@@ -341,8 +411,8 @@ export class DataService {
       if (this.from > 0 && this.to > this.from) return true
     }
     if (this.mode === 'write') {
-      if (!this.utils.isEmpty(this.from) && this.from >= 0 && !this.utils.isEmpty(this.to) && this.to >= this.from
-        && !this.utils.isEmpty(this.externalUrl)) return true
+      if (!this.utils.isEmpty(this.tempFrom) && this.tempFrom >= 0 && !this.utils.isEmpty(this.tempTo) &&
+        this.tempTo >= this.tempFrom && !this.utils.isEmpty(this.tempExternalUrl)) return true
     }
 
     return false

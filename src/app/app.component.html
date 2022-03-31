@@ -4,7 +4,8 @@
   <app-menu></app-menu>
 
   <ion-content [fullscreen]="true" id="mainContent">
-    <ion-progress-bar type="indeterminate" color="medium" id="progress-bar"  *ngIf="dataService.readingNfc">
+    <ion-progress-bar type="indeterminate" color="medium" id="progress-bar"  *ngIf="dataService.readingNfc &&
+    dataService.mode != 'write'">
       Scanning
     </ion-progress-bar>
     <ion-list>
