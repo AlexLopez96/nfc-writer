@@ -1,6 +1,6 @@
 <ion-footer>
 <!--  <ion-toolbar *ngIf="dataService.isDataInserted">-->
-  <ion-toolbar *ngIf="dataService.from && dataService.to">
+  <ion-toolbar *ngIf="dataService.from !== null && dataService.to !== null">
     <p id="p-count">{{dataService.nfcArray$.getValue().length}} of {{dataService.to + 1 - dataService.from}}</p>
   </ion-toolbar>
 

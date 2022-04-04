@@ -13,18 +13,20 @@ export class DataService {
   public nfcId: string;
   public qrCode: string = null;
   public tokenId: number;
-  public from: number;
-  public to: number;
+  public from: number = null;
+  public to: number = null;
   public externalUrl: string = '';
 
   public tempFrom: number;
   public tempTo: number;
   public tempExternalUrl: string = '';
+  public tempLockMode: any;
 
   public difference: number;
   public nfcArray$ = new BehaviorSubject([]);
-  public readingNfc = false;
-  public mode: 'read' | 'write' | 'writing' = "read";
+  public scanningNfc = false;
+  public mode: 'read' | 'reading' | 'write' | 'writing' = "read";
+  public lockMode: boolean = false;
   public loading: any;
   public isDataInserted = false;
   private readSub;
@@ -50,7 +52,6 @@ export class DataService {
     this.barcodeScanner.scan().then(barcodeData => {
       this.clearNfcList();
       const qrArray = barcodeData.text.split('|');
-
       if (qrArray.length >= 3 && qrArray.length <= 4) {
         this.qrCode = barcodeData.text;
         if (this.mode == 'write'){
@@ -82,14 +83,15 @@ export class DataService {
 
   readNFC() {
     this.nfcId = '';
-    this.readingNfc = true;
+    this.scanningNfc = true;
     const flags = this.nfc.FLAG_READER_NFC_A | this.nfc.FLAG_READER_NFC_V;
     this.unsubFromAllSubs()
     this.tokenId = this.nfcArray$.getValue().length + this.from;
 
     this.readSub = this.nfc.readerMode(flags).subscribe(
       (tag) => {
-        if (this.readingNfc) {
+        console.log(tag, "TAG")
+        if (this.scanningNfc) {
           const event = {
             "tag": tag
           }
@@ -100,7 +102,7 @@ export class DataService {
       },
       err => console.log('Error reading tag', err)
     );
-  }
+  };
 
   writeNfc() {
     if (this.mode === 'write'){
@@ -108,33 +110,32 @@ export class DataService {
       this.startWriting();
     }else{
       this.mode = 'write';
-      this.stopWriting();
+      this.stopScanning();
     }
   }
 
   startWriting(){
-    this.readingNfc = true;
+    this.scanningNfc = true;
     this.unsubFromAllSubs()
     this.appRef.tick()
     this.writeSub = this.nfc.addNdefListener()
       .subscribe(async (event) => {
-        // this.tokenId++;
         this.tokenId = this.nfcArray$.getValue().length + this.from;
         let external_url = this.externalUrl;
-        external_url = external_url.replace(/\{tokenId}/g, this.tokenId.toString());
+        external_url = external_url.replace(/{tokenId}/g, this.tokenId.toString());
 
         let message = [
           // this.ndef.textRecord("hola"),
           this.ndef.uriRecord(external_url)
 
         ];
-        console.log("hola")
 
         // debugger;
-        if (!this.isExistingNfc(this.utils.decimalArrayToHex(event.tag.id)) && this.readingNfc){
+        if (!this.isExistingNfc(this.utils.decimalArrayToHex(event.tag.id)) && this.scanningNfc && event.tag.isWritable){
           await this.nfc.write(message)
             .then(async () => {
               await this.setReadData(event)
+
               // this.writtenAlert()
             }).catch((e) => {
               this.keepNfcNearAlert()
@@ -144,11 +145,11 @@ export class DataService {
           // return
         }else{
           // await this.repeatedAlert()
+          await this.lockedAlert();
         }
         if((this.to  - this.from)+1 == this.nfcArray$.value.length){
-          this.readingNfc = false;
+          this.stopScanning()
           this.mode = 'write'
-          this.unsubFromAllSubs()
 
         }
         this.appRef.tick()
@@ -157,8 +158,52 @@ export class DataService {
     }
   }
 
-  stopWriting(){
-    this.readingNfc = false;
+  async setReadData(event) {
+    let external_url;
+    if (!this.utils.isEmpty(event.tag.ndefMessage)) { //check if we have an URL
+      external_url = this.getNdefMessageFromCharCode(event.tag.ndefMessage[0].payload);
+    }else{
+      external_url = ''
+    }
+
+    //In case we are writing we take the event before write so the data displayed is previous writing. So we take the
+    //current URL and replace it with the dynamic values
+    if (this.mode === "writing"){
+      external_url = this.externalUrl.replace(/{tokenId}/g, this.tokenId.toString());
+    }
+
+    const data = {
+      "tokenId": this.tokenId,
+      "nfc": this.utils.decimalArrayToHex(event.tag.id).toUpperCase(),
+      external_url,
+      "locked": !event.tag.isWritable
+    }
+    console.log(data, "DATAA")
+    let result = this.nfcArray$.getValue().filter(x => x.nfc === this.utils.decimalArrayToHex(event.tag.id).toUpperCase());
+
+    if (this.utils.isEmpty(result)) {
+      if (this.lockMode){
+        await this.nfc.makeReadOnly().then(()=>{
+          this.nfcArray$.next([...this.nfcArray$.getValue(), data])
+        }).catch((e)=>{
+          console.log("An error has occurred on ReadOnly mode")
+        })
+      }else{
+        this.nfcArray$.next([...this.nfcArray$.getValue(), data])
+      }
+    }
+    else await this.repeatedAlert()
+
+    this.nfcId = this.utils.decimalArrayToHex(event.tag.id)
+    // this.readingNfc = false;
+    if (this.nfcArray$.getValue().length == this.to - this.from) this.stopScanning()
+
+
+    this.appRef.tick()
+  }
+
+  stopScanning(){
+    this.scanningNfc = false;
     this.unsubFromAllSubs();
     this.appRef.tick()
   }
@@ -191,39 +236,6 @@ export class DataService {
     } else {
       await this.emptyErrorAlert();
     }
-  }
-
-
-
-  async setReadData(event) {
-    let external_url;
-    if (!this.utils.isEmpty(event.tag.ndefMessage)) { //check if we have an URL
-      external_url = this.getNdefMessageFromCharCode(event.tag.ndefMessage[0].payload);
-    }else{
-      external_url = ''
-    }
-
-    //In case we are writing we take the event before write so the data displayed is previous writing. So we take the
-    //current URL and replace it with the dynamic values
-    if (this.mode === "writing"){
-      external_url = this.externalUrl.replace(/\{tokenId}/g, this.tokenId.toString());
-    }
-
-    const data = {
-      "tokenId": this.tokenId,
-      "nfc": this.utils.decimalArrayToHex(event.tag.id).toUpperCase(),
-      external_url
-    }
-
-    let result = this.nfcArray$.getValue().filter(x => x.nfc === this.utils.decimalArrayToHex(event.tag.id).toUpperCase());
-
-    if (this.utils.isEmpty(result)) this.nfcArray$.next([...this.nfcArray$.getValue(), data])
-    else await this.repeatedAlert()
-
-    this.nfcId = this.utils.decimalArrayToHex(event.tag.id)
-    this.readingNfc = false;
-
-    this.appRef.tick()
   }
 
   async presentLoading() {
@@ -338,6 +350,21 @@ export class DataService {
       , 4000);
   }
 
+  async lockedAlert() {
+    const alert = await this.alertController.create({
+      cssClass: 'my-custom-class',
+      header: 'ERROR',
+      message: 'The NFC is locked, you can not write on it.',
+      buttons: ['OK']
+    });
+
+    await alert.present();
+    setTimeout(() => {
+        alert.dismiss();
+      }
+      , 4000);
+  }
+
   async clearAlert() {
     const alert = await this.alertController.create({
       cssClass: 'my-custom-class',
@@ -390,7 +417,7 @@ export class DataService {
   clearNfcList() {
     this.nfcId = '';
     this.nfcArray$.next([]);
-    this.readingNfc = false;
+    this.scanningNfc = false;
   }
 
   getNdefMessageFromCharCode(charArray) {
@@ -411,7 +438,7 @@ export class DataService {
       if (this.from > 0 && this.to > this.from) return true
     }
     if (this.mode === 'write') {
-      if (!this.utils.isEmpty(this.tempFrom) && this.tempFrom >= 0 && !this.utils.isEmpty(this.tempTo) &&
+      if (this.tempFrom !== null && this.tempFrom >= 0 && this.tempTo !== null &&
         this.tempTo >= this.tempFrom && !this.utils.isEmpty(this.tempExternalUrl)) return true
     }
 
