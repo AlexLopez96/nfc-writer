@@ -13,9 +13,7 @@ export class FooterComponent implements OnInit {
 
   ngOnInit() {}
 
-  clearNfcArray(){
-    this.dataService.clearAlert()
-    if (this.dataService.mode == "writing") this.dataService.mode = "write";
+  async clearNfcArray(){
+    await this.dataService.clearAlert()
   }
-
 }

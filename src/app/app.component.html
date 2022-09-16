@@ -4,25 +4,12 @@
   <app-menu></app-menu>
 
   <ion-content [fullscreen]="true" id="mainContent">
-    <ion-progress-bar type="indeterminate" color="medium" id="progress-bar"  *ngIf="dataService.scanningNfc &&
-    dataService.mode != 'write'">
+    <ion-progress-bar type="indeterminate" color="medium" id="progress-bar"  *ngIf="dataService.scanningNfc">
       Scanning
     </ion-progress-bar>
     <ion-list>
-   <!--   <ion-item-sliding #slidingItem (click)="slidingItem.close()">
-        <ion-item>
-
-          <h1>AA:AA:AA:AA:AA</h1>
-          <i class="fa-solid fa-lock black item-icon"></i>
-        </ion-item>
-        <ion-item-options side="end">
-          <ion-item-option *ngIf="dataService.mode === 'read'" color="danger">DELETE</ion-item-option>
-          <ion-item-option *ngIf="dataService.mode === 'write'" color="warning">LOCK</ion-item-option>
-        </ion-item-options>
-      </ion-item-sliding>-->
       <ion-item-sliding #slidingItem (click)="slidingItem.close()" *ngFor="let nfc of dataService.nfcArray$.getValue(); let i = index">
           <ion-item >
-<!--            {{nfc | json}}-->
             <ion-label><h1>{{i+1}} - {{nfc.nfc}} <i *ngIf="nfc.locked" class="fa-solid fa-lock black item-icon"></i></h1>
               <p>
               <ion-grid>

@@ -5,6 +5,8 @@
       <map>
         <entry key="..\:/Practiques/nfc-reader-fixed/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.121" />
         <entry key="..\:/Practiques/nfc-reader-fixed/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.121" />
+        <entry key="..\:/Practiques/nfc-writer/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.2145" />
+        <entry key="..\:/Practiques/nfc-writer/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.2145" />
       </map>
     </option>
   </component>

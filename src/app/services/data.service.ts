@@ -25,7 +25,7 @@ export class DataService {
   public difference: number;
   public nfcArray$ = new BehaviorSubject([]);
   public scanningNfc = false;
-  public mode: 'read' | 'reading' | 'write' | 'writing' = "read";
+  public mode: 'read' | 'write' = "read";
   public lockMode: boolean = false;
   public loading: any;
   public isDataInserted = false;
@@ -86,17 +86,16 @@ export class DataService {
     this.scanningNfc = true;
     const flags = this.nfc.FLAG_READER_NFC_A | this.nfc.FLAG_READER_NFC_V;
     this.unsubFromAllSubs()
-    this.tokenId = this.nfcArray$.getValue().length + this.from;
-
+    this.appRef.tick()
     this.readSub = this.nfc.readerMode(flags).subscribe(
-      (tag) => {
-        console.log(tag, "TAG")
-        if (this.scanningNfc) {
+      async (tag) => {
+        if (this.scanningNfc && this.nfcArray$.getValue().length <= (this.to - this.from)+1) {
+          this.tokenId = this.nfcArray$.getValue().length + this.from;
           const event = {
             "tag": tag
           }
 
-          this.setReadData(event)
+          await this.setReadData(event)
 
         }
       },
@@ -105,16 +104,6 @@ export class DataService {
   };
 
   writeNfc() {
-    if (this.mode === 'write'){
-      this.mode = 'writing';
-      this.startWriting();
-    }else{
-      this.mode = 'write';
-      this.stopScanning();
-    }
-  }
-
-  startWriting(){
     this.scanningNfc = true;
     this.unsubFromAllSubs()
     this.appRef.tick()
@@ -145,12 +134,10 @@ export class DataService {
           // return
         }else{
           // await this.repeatedAlert()
-          await this.lockedAlert();
+          if (!event.tag.isWritable) await this.lockedAlert();
         }
         if((this.to  - this.from)+1 == this.nfcArray$.value.length){
           this.stopScanning()
-          this.mode = 'write'
-
         }
         this.appRef.tick()
       }), (err) => {
@@ -168,7 +155,7 @@ export class DataService {
 
     //In case we are writing we take the event before write so the data displayed is previous writing. So we take the
     //current URL and replace it with the dynamic values
-    if (this.mode === "writing"){
+    if (this.mode === "write"){
       external_url = this.externalUrl.replace(/{tokenId}/g, this.tokenId.toString());
     }
 
@@ -178,7 +165,6 @@ export class DataService {
       external_url,
       "locked": !event.tag.isWritable
     }
-    console.log(data, "DATAA")
     let result = this.nfcArray$.getValue().filter(x => x.nfc === this.utils.decimalArrayToHex(event.tag.id).toUpperCase());
 
     if (this.utils.isEmpty(result)) {
@@ -196,7 +182,7 @@ export class DataService {
 
     this.nfcId = this.utils.decimalArrayToHex(event.tag.id)
     // this.readingNfc = false;
-    if (this.nfcArray$.getValue().length == this.to - this.from) this.stopScanning()
+    if (this.nfcArray$.getValue().length == (this.to - this.from)+1) this.stopScanning()
 
 
     this.appRef.tick()
@@ -204,7 +190,7 @@ export class DataService {
 
   stopScanning(){
     this.scanningNfc = false;
-    this.unsubFromAllSubs();
+    // this.unsubFromAllSubs();
     this.appRef.tick()
   }
 
@@ -217,8 +203,6 @@ export class DataService {
         })
       };
       const data = this.nfcArray$.getValue()
-      console.log(data, "DATA SERVER")
-
       this.http.post<any>('https://api-nft.zertifier.com/api/nfc', {
         code: this.qrCode,
         data

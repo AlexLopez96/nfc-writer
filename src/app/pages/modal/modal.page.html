@@ -1,0 +1,58 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Data configuration</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <ion-grid>
+    <ion-row>
+      <ion-col>
+        <ion-button color="gold" expand="block" size="large" (click)="dataService.readQr()">
+          READ QR
+        </ion-button>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-item>
+          <ion-label position="floating">From</ion-label>
+          <ion-input [(ngModel)]="this.dataService.tempFrom" clearOnEdit="true" type="number" required="true"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col>
+        <ion-item>
+          <ion-label position="floating">To</ion-label>
+          <ion-input [(ngModel)]="this.dataService.tempTo" type="number" required="true"></ion-input>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-item>
+          <ion-label position="floating">URL</ion-label>
+          <ion-input [(ngModel)]="this.dataService.tempExternalUrl" required="true"></ion-input>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="12">
+        <ion-item>
+          <ion-label>Set the NFC read only?</ion-label>
+          <ion-checkbox color="primary" [(ngModel)]="this.dataService.tempLockMode"></ion-checkbox>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row class="ion-margin-top">
+      <ion-col>
+        <ion-button color="gold" expand="full" (click)="saveModal()">SAVE</ion-button>
+      </ion-col>
+      <ion-col>
+        <ion-button color="danger" class="btn-close" shape="round" expand="full" (click)="dismissModal()">CLOSE</ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+</ion-content>
+

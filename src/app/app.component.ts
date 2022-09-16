@@ -30,7 +30,6 @@ export class AppComponent {
     if (!this.dataService.externalUrl.includes("{tokenId}") || this.dataService.mode === 'read') {
       this.nfcArray.splice(index, 1)
       for (let i = index; i < this.dataService.nfcArray$.getValue().length; i++) {
-        console.log(this.dataService.nfcArray$.getValue()[i])
         this.dataService.nfcArray$.getValue()[i].tokenId--
       }
     }else{
